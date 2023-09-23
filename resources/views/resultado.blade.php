@@ -28,43 +28,24 @@
 
         <div class="row">
             <div class="col-12 d-flex flex-column justify-content-center align-items-center">
-                <p>Ahora</p>
                 <div class="current-weather d-flex justify-content-center align-items-center">
-                    <div class="weather-image">
-                        <img src="http://openweathermap.org/img/wn/{{ $currentWeather->icon }}@2x.png" alt=""
-                            class="image-fluid">
-                    </div>
+                    <p>Ahora</p>
                     <div class="weather-details">
-                        <p class="fs-6 fw-bold">{{ $currentWeather->weather }}</p>
-                        <p class="fs-1 fw-bold">{{ $currentWeather->temperature }}°</p>
+                        <div class="weather-image">
+                            <img src="http://openweathermap.org/img/wn/{{ $currentWeather->icon }}@2x.png" alt=""
+                            class="image-fluid">
+                        </div>
+                        <div class="weather-details">
+                            <p class="fs-6 fw-bold text-capitalize">{{ $currentWeather->weather }}</p>
+                            <p class="fs-1 fw-bold">{{ $currentWeather->temperature }}°</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- TODO: Mostrar el pronostico horario correctamente --}}
+        {{var_dump($hourlyWeather)}}
     </div>
 
-
-
-    {{-- <table class="table">
-                <thead>
-                    <tr>
-                        <th>Ciudad</th>
-                        <th>Hora</th>
-                        <th>Temperatura</th>
-                        <th>Estado del tiempo</th>
-                        <th>Icono</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ $currentWeather->city }}</td>
-                        <td>{{ $currentWeather->time }}</td>
-                        <td>{{ $currentWeather->temperature }}</td>
-                        <td>{{ $currentWeather->weather }}</td>
-                        <td><img src="http://openweathermap.org/img/wn/{{$currentWeather->icon}}@2x.png" alt="Icon"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div> --}}
 @endsection

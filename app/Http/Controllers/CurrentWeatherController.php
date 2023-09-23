@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use DateTime;
 use DateTimeZone;
-use Illuminate\Http\Request;
 use GuzzleHttp\Client;
-use Illuminate\Http\JsonResponse;
 
 class CurrentWeatherController extends Controller
 {

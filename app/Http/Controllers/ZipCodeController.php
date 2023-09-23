@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests\ZipCodeRequest;
 use App\Http\Controllers\CurrentWeatherController;
+use App\Http\Controllers\HourlyWeatherController;
 use App\Models\ZipCode;
 use Illuminate\Http\RedirectResponse;
 
@@ -37,6 +38,10 @@ class ZipCodeController extends Controller {
     public function show($codigoPostal) {
         $currentWeather = ZipCode::where('zip_code', $codigoPostal)->first();
 
-        return view('resultado', compact('currentWeather'));
+        // Obtenemos los datos de la API de pronóstico por hora
+        $hourlyWeatherController = new HourlyWeatherController();
+        $hourlyWeather = $hourlyWeatherController->getHourlyWeather($codigoPostal);
+
+        return view('resultado', compact('currentWeather', 'hourlyWeather'));
     }
 }
