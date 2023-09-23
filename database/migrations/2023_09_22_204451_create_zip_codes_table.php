@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('zip_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('zip_code');
+            $table->string('zip_code', 5);
             $table->string('city');
+            $table->string('time');
             $table->string('weather');
             $table->string('temperature');
+            $table->string('icon');
             $table->timestamps();
         });
     }
