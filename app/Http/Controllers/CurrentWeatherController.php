@@ -8,7 +8,8 @@ use GuzzleHttp\Client;
 
 class CurrentWeatherController extends Controller
 {
-    public function consultarAPI(string $zipCode): array{
+    public function consultarAPI(string $zipCode): array
+    {
         $API_KEY = '004e173adb28f870bede682220c84c74';
 
         // Realizamos la solicitud a la API
@@ -24,13 +25,27 @@ class CurrentWeatherController extends Controller
         $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
         $formattedTime = $dt->format('H:i');
 
+        // Traducimos el estado del tiempo
+        $mainClimaTraducido = [
+            'Clear' => 'Despejado',
+            'Clouds' => 'Nublado',
+            'Rain' => 'Lluvia',
+            'Drizzle' => 'Llovizna',
+            'Thunderstorm' => 'Tormenta',
+            'Snow' => 'Nieve',
+        ];
+
+        $weather = isset($mainClimaTraducido[$data->weather[0]->main])
+            ? $mainClimaTraducido[$data->weather[0]->main]
+            : $data->weather[0]->main;
+
         // Extremos los datos que nos interesan
         $extractedData = [
             'zip_code' => $zipCode,
             'city' => $data->name,
             'time' => $formattedTime,
-            'temperature' => $data->main->temp,
-            'weather' => $data->weather[0]->description,
+            'temperature' => round($data->main->temp),
+            'weather' => $weather,
             'icon' => $data->weather[0]->icon
         ];
 

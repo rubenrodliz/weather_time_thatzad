@@ -38,6 +38,17 @@ class HourlyWeatherController extends Controller
         // Obtener el día actual en formato de día
         $fecha_actual = date('d');
 
+        // Traducción de valores 'main' del clima
+        $mainClimaTraducido = [
+            'Clear' => 'Despejado',
+            'Clouds' => 'Nublado',
+            'Rain' => 'Lluvia',
+            'Drizzle' => 'Llovizna',
+            'Thunderstorm' => 'Tormenta',
+            'Snow' => 'Nieve',
+            'Mist' => 'Niebla',
+        ];
+
         // Obtener los datos horarios correspondientes a las próximas horas
         $hourlyData = [];
         foreach ($data['hourly'] as $hourly) {
@@ -48,29 +59,19 @@ class HourlyWeatherController extends Controller
 
             // Verifica si la hora está en las próximas horas y la fecha es la misma que la fecha actual
             if (in_array($hora_dt, $horas_futuras) && $fecha_dt == $fecha_actual) {
-                $hourlyData[] = $hourly;
+                // Traduce el valor 'main' del clima
+                $mainClima = $mainClimaTraducido[$hourly['weather'][0]['main']] ?? $hourly['weather'][0]['main'];
+    
+                $hourlyData[] = [
+                    'time' => date('H:i', $hourly['dt']),
+                    'temperature' => round($hourly['temp']),
+                    'weather' => $mainClima,
+                    'icon' => $hourly['weather'][0]['icon']
+                ];
             }
         }
 
-        $extractedData = [];
-
-        foreach ($hourlyData as $hourly) {
-            // Formateamos la fecha y hora
-            $dt = new DateTime();
-            $dt->setTimestamp($hourly['dt']);
-            $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
-            $formattedTime = $dt->format('H:i');
-
-            // Extremos los datos que nos interesan
-            $extractedData[] = [
-                'time' => $formattedTime,
-                'temperature' => $hourly['temp'],
-                'weather' => $hourly['weather'][0]['description'],
-                'icon' => $hourly['weather'][0]['icon']
-            ];
-        }
-
         // Devolvemos los datos en formato JSON
-        return $extractedData;
+        return $hourlyData;
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ZipCodeRequest;
 use App\Http\Controllers\CurrentWeatherController;
 use App\Http\Controllers\HourlyWeatherController;
+use App\Http\Controllers\DailyWeatherController;
 use App\Models\ZipCode;
 use Illuminate\Http\RedirectResponse;
 
@@ -33,6 +34,8 @@ class ZipCodeController extends Controller {
         }
 
         return redirect()->route('zipcode.show', ['codigoPostal' => $zipCode]);
+
+        // SELECT `zip_code`, `city`, `temperature` FROM `zip_codes` order by temperature LIMIT 5;
     }
 
     public function show($codigoPostal) {
@@ -42,6 +45,10 @@ class ZipCodeController extends Controller {
         $hourlyWeatherController = new HourlyWeatherController();
         $hourlyWeather = $hourlyWeatherController->getHourlyWeather($codigoPostal);
 
-        return view('resultado', compact('currentWeather', 'hourlyWeather'));
+        // Obtenemos los datos de la API para pronóstico diario
+        $dailyWeatherController = new DailyWeatherController();
+        $dailyWeather = $dailyWeatherController->getDailyWeather($codigoPostal);
+
+        return view('resultado', compact('currentWeather', 'hourlyWeather', 'dailyWeather'));
     }
 }
