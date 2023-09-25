@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\GeoCodingController;
 use GuzzleHttp\Client;
+use DateTime;
+use DateTimeZone;
 
 class HourlyWeatherController extends Controller
 {
-    // TODO: Que te muestre solo las próximas 3 horas
-    public function getHourlyWeather(string $zipCode): array{
+    public function getHourlyWeather(string $zipCode)
+    {
         // Obtenemos las coordenadas del código postal
         $GeoCodingCoordinates = new GeoCodingController();
         $coordinates = $GeoCodingCoordinates->getCoordinates($zipCode);
@@ -18,41 +20,57 @@ class HourlyWeatherController extends Controller
         // Realizamos la solicitud a la API
         $API_KEY = '004e173adb28f870bede682220c84c74';
         $client = new Client();
-        $response = $client->request('GET', "https://api.openweathermap.org/data/2.5/onecall?lat={$coordinates['lat']}&lon={$coordinates['lon']}&exclude=current,minutely,daily,alerts&lang=es&appid={$API_KEY}&units=metric");
+        $response = $client->request('GET', "https://api.openweathermap.org/data/2.5/onecall?lat={$coordinates['lat']}&lon={$coordinates['lon']}&exclude=minutely,daily,alerts&lang=es&appid={$API_KEY}&units=metric");
 
-        // Obtenemos los datos y los estructuramos
-        $data = json_decode($response->getBody());
-        $hourlyWeather = [];
-        // URL base para los íconos del tiempo
-        $iconBaseUrl = 'https://openweathermap.org/img/wn/';
+        $data = json_decode($response->getBody(), true);
 
-        foreach ($data->hourly as $hour) {
-            // Obtener la hora en formato legible
-            $hourlyTime = date('H:i', $hour->dt);
+        // Obtener la hora actual en formato de hora
+        $hora_actual = date('H') + 1;
 
-            // Obtener la temperatura y descripción del tiempo
-            $temperature = $hour->temp;
-            $description = $hour->weather[0]->description;
+        // Calcular las próximas 3 horas en formato de hora
+        $horas_futuras = [];
+        for ($i = 1; $i <= 3; $i++) {
+            // Calcula la próxima hora sumando $i a la hora actual
+            $hora_futura = (($hora_actual + 1) + $i) % 24;
+            $horas_futuras[] = $hora_futura;
+        }
 
-            // Obtener el nombre del icono y construir la URL completa del ícono
-            $iconName = $hour->weather[0]->icon;
-            $iconUrl = $iconBaseUrl . $iconName . '@2x.png'; // Puedes ajustar el tamaño si es necesario
+        // Obtener el día actual en formato de día
+        $fecha_actual = date('d');
 
-            // Agregar estos datos al array de pronóstico por hora
-            $hourlyWeather[] = [
-                'hour' => $hourlyTime,
-                'temperature' => $temperature,
-                'description' => $description,
-                'icon_url' => $iconUrl,
-            ];
+        // Obtener los datos horarios correspondientes a las próximas horas
+        $hourlyData = [];
+        foreach ($data['hourly'] as $hourly) {
+            // Obtén la hora de la marca de tiempo UNIX
+            $hora_dt = date('H', $hourly['dt']);
+            // Obtén la fecha de la marca de tiempo UNIX en formato de día
+            $fecha_dt = date('d', $hourly['dt']);
 
-            // Limitar el bucle a las próximas 3 horas
-            if (count($hourlyWeather) >= 12) {
-                break;
+            // Verifica si la hora está en las próximas horas y la fecha es la misma que la fecha actual
+            if (in_array($hora_dt, $horas_futuras) && $fecha_dt == $fecha_actual) {
+                $hourlyData[] = $hourly;
             }
         }
 
-        return $hourlyWeather;
+        $extractedData = [];
 
+        foreach ($hourlyData as $hourly) {
+            // Formateamos la fecha y hora
+            $dt = new DateTime();
+            $dt->setTimestamp($hourly['dt']);
+            $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
+            $formattedTime = $dt->format('H:i');
+
+            // Extremos los datos que nos interesan
+            $extractedData[] = [
+                'time' => $formattedTime,
+                'temperature' => $hourly['temp'],
+                'weather' => $hourly['weather'][0]['description'],
+                'icon' => $hourly['weather'][0]['icon']
+            ];
+        }
+
+        // Devolvemos los datos en formato JSON
+        return $extractedData;
     }
 }
