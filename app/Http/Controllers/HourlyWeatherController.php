@@ -25,13 +25,13 @@ class HourlyWeatherController extends Controller
         $data = json_decode($response->getBody(), true);
 
         // Obtener la hora actual en formato de hora
-        $hora_actual = date('H') + 1;
+        $hora_actual = date('H');
 
         // Calcular las próximas 3 horas en formato de hora
         $horas_futuras = [];
         for ($i = 1; $i <= 3; $i++) {
             // Calcula la próxima hora sumando $i a la hora actual
-            $hora_futura = (($hora_actual + 1) + $i) % 24;
+            $hora_futura = (($hora_actual) + $i) % 24;
             $horas_futuras[] = $hora_futura;
         }
 
