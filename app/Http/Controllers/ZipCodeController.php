@@ -8,6 +8,7 @@ use App\Http\Requests\ZipCodeRequest;
 use App\Http\Controllers\CurrentWeatherController;
 use App\Http\Controllers\HourlyWeatherController;
 use App\Http\Controllers\DailyWeatherController;
+use App\Http\Controllers\Top5ColdestCitiesController;
 use App\Models\ZipCode;
 use Illuminate\Http\RedirectResponse;
 
@@ -49,6 +50,10 @@ class ZipCodeController extends Controller {
         $dailyWeatherController = new DailyWeatherController();
         $dailyWeather = $dailyWeatherController->getDailyWeather($codigoPostal);
 
-        return view('resultado', compact('currentWeather', 'hourlyWeather', 'dailyWeather'));
+        // Obtenemos el top 5 de códigos postales más fríos
+        $Top5ColdestCitiesController = new Top5ColdestCitiesController();
+        $top5ColdestZipCodes = $Top5ColdestCitiesController->getTop5ColdestZipCodes();
+
+        return view('resultado', compact('currentWeather', 'hourlyWeather', 'dailyWeather', 'top5ColdestZipCodes'));
     }
 }

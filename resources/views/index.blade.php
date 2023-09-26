@@ -23,7 +23,10 @@
                         <input type="text" class="form-control bg-transparent text-white" id="zipcode" name="zip_code" placeholder="Introduce el código postal">
                     </div>
                     <div class="mb-3">
-                        <button type="submit" class="btn btn-info text-white w-100 fs-5">Buscar</button>
+                        <button type="submit" class="btn btn-info text-white d-flex justify-content-between align-items-center w-100 fs-5">
+                            <span class="text-center flex-grow-1 fs-3">Buscar</span>
+                            <i class="fa-solid fa-magnifying-glass-location fa-2x" style="color: #ffffff; margin-left: auto;"></i>
+                        </button>
                     </div>
                 </form>
             </div>
