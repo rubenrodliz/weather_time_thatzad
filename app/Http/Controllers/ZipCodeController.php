@@ -12,48 +12,65 @@ use App\Http\Controllers\Top5ColdestCitiesController;
 use App\Models\ZipCode;
 use Illuminate\Http\RedirectResponse;
 
-class ZipCodeController extends Controller {
-    public function index() {
+class ZipCodeController extends Controller
+{
+    public function index()
+    {
         return view('index');
     }
 
-    public function store(ZipCodeRequest $request): RedirectResponse {
+    public function store(ZipCodeRequest $request): RedirectResponse
+    {
         // Obtenemos el código postal introducido por el usuario
         $zipCode = $request->zip_code;
 
-        // Realizamos la solicitud a la API y obtenemos los datos
-        $currentWeatherController = new CurrentWeatherController();
-        $data = $currentWeatherController->consultarAPI($zipCode);
+        // Obtenemos la hora a buscar y comprobamos que no exista el registro
+        $currentTime = now()->addHour()->addHour()->format('H');
+        $currentIntTime = intval($currentTime);
+        $existingRecord = ZipCode::where('zip_code', $zipCode)->where('current_time', '=', $currentIntTime)->first();
 
-        // Introducimos los datos en la base de datos
-        $existingRecord = ZipCode::where('zip_code', $zipCode)->first();
-
+        // Si existe, redirigimos a la vista de resultados
         if ($existingRecord) {
-            $existingRecord->update($data);
-        } else {
-            $currentWeather = ZipCode::create($data);
+            // Almacenar $existingRecord en la sesión
+            session(['existingRecord' => $existingRecord]);
+            return redirect()->route('zipcode.show', compact('zipCode', 'existingRecord'));
         }
 
-        return redirect()->route('zipcode.show', ['codigoPostal' => $zipCode]);
+        // Si no existe, continuamos con el proceso
 
-        // SELECT `zip_code`, `city`, `temperature` FROM `zip_codes` order by temperature LIMIT 5;
-    }
-
-    public function show($codigoPostal) {
-        $currentWeather = ZipCode::where('zip_code', $codigoPostal)->first();
+        // Obtenemos los datos de la API de tiempo actual
+        $currentWeatherController = new CurrentWeatherController();
+        $currentWeatherController->getCurrentWeather($zipCode);
 
         // Obtenemos los datos de la API de pronóstico por hora
         $hourlyWeatherController = new HourlyWeatherController();
-        $hourlyWeather = $hourlyWeatherController->getHourlyWeather($codigoPostal);
+        $hourlyWeatherController->getHourlyWeather($zipCode);
 
         // Obtenemos los datos de la API para pronóstico diario
         $dailyWeatherController = new DailyWeatherController();
-        $dailyWeather = $dailyWeatherController->getDailyWeather($codigoPostal);
+        $dailyWeatherController->getDailyWeather($zipCode);
+
+        return redirect()->route('zipcode.show', compact('zipCode'));
+    }
+
+    public function show($zipCode, $existingRecord = null)
+    {
+        // Recuperar $existingRecord de la sesión
+        $existingRecord = session('existingRecord');
+
+        if ($existingRecord) {
+            // Obtenemos el top 5 de códigos postales más fríos
+            $Top5ColdestCitiesController = new Top5ColdestCitiesController();
+            $top5ColdestZipCodes = $Top5ColdestCitiesController->getTop5ColdestZipCodes();
+            return view('resultado', compact('existingRecord', 'top5ColdestZipCodes'));
+        } 
+
+        $existingRecord = ZipCode::where('zip_code', $zipCode)->first();
 
         // Obtenemos el top 5 de códigos postales más fríos
         $Top5ColdestCitiesController = new Top5ColdestCitiesController();
         $top5ColdestZipCodes = $Top5ColdestCitiesController->getTop5ColdestZipCodes();
 
-        return view('resultado', compact('currentWeather', 'hourlyWeather', 'dailyWeather', 'top5ColdestZipCodes'));
+        return view('resultado', compact('existingRecord', 'top5ColdestZipCodes'));
     }
 }

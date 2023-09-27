@@ -11,4 +11,4 @@ Route::get('/', [ZipCodeController::class, 'index'])->name('zipcode.index');
 Route::post('/consultar-api', [ZipCodeController::class, 'store'])->name('zipcode.store');
 
 // Ruta para mostrar el resultado
-Route::get('/mostrar-resultado/{codigoPostal}', [ZipCodeController::class, 'show'])->name('zipcode.show');
+Route::get('/mostrar-resultado/{zipCode}', [ZipCodeController::class, 'show'])->name('zipcode.show');

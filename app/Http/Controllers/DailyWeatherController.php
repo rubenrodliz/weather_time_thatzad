@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use App\Models\ZipCode; // Asegúrate de importar el modelo correcto
 
 class DailyWeatherController extends Controller
 {
-    public function getDailyWeather(string $zipCode) {
+    public function getDailyWeather(string $zipCode)
+    {
         // Obtenemos las coordenadas del código postal
         $GeoCodingCoordinates = new GeoCodingController();
         $coordinates = $GeoCodingCoordinates->getCoordinates($zipCode);
@@ -29,23 +31,43 @@ class DailyWeatherController extends Controller
             'Mist' => 'Niebla',
         ];
 
-        // Obtener los datos diarios correspondientes a los próximos días
+        $diasSemanaTraducido = [
+            'Monday' => 'Lunes',
+            'Tuesday' => 'Martes',
+            'Wednesday' => 'Miércoles',
+            'Thursday' => 'Jueves',
+            'Friday' => 'Viernes',
+            'Saturday' => 'Sábado',
+            'Sunday' => 'Domingo',
+        ];
+
+        // Obtener la fecha actual en formato de día
+        $fecha_actual = date('d');
+
+        // Inicializar arrays para cada día
         $dailyData = [];
+
+        // Obtener los datos diarios correspondientes a los próximos días
         foreach ($data['daily'] as $daily) {
-            if (count($dailyData) === 4) {
+            if (count($dailyData) === 5) {
                 break;
             }
             $dia_dt = date('d', $daily['dt']);
 
-            // Si el día es igual al día actual o está en el futuro
-            if ($dia_dt > date('d')) {
+            // Verificar si la fecha es mayor o igual a la fecha actual
+            if ($dia_dt >= $fecha_actual) {
                 $daily['weather'][0]['main'] = $mainClimaTraducido[$daily['weather'][0]['main']];
-                $daily['dt'] = date('d/m/Y', $daily['dt']);
+                
+                // Traducir el día de la semana
+                $daily['dt'] = date('l', $daily['dt']);
+                $diaTraducido = $diasSemanaTraducido[$daily['dt']] ?? $daily['dt'];
 
+                // Traducir el clima
                 $mainClima = $mainClimaTraducido[$daily['weather'][0]['main']] ?? $daily['weather'][0]['main'];
 
+                // Almacenar los datos en el array correspondiente según el día
                 $dailyData[] = [
-                    'date' => $daily['dt'],
+                    'date' => $diaTraducido,
                     'temperature' => round($daily['temp']['day']),
                     'weather' => $mainClima,
                     'icon' => $daily['weather'][0]['icon']
@@ -53,6 +75,20 @@ class DailyWeatherController extends Controller
             }
         }
 
-        return $dailyData;
+        // Almacenar los datos en la base de datos
+        $zipCodeModel = ZipCode::where('zip_code', $zipCode)->first();
+        if ($zipCodeModel) {
+            for ($i = 1; $i <= 5; $i++) {
+                if (isset($dailyData[$i - 1])) {
+                    $zipCodeModel->update([
+                        "{$i}day_time" => $dailyData[$i - 1]['date'],
+                        "{$i}day_weather" => $dailyData[$i - 1]['weather'],
+                        "{$i}day_temperature" => $dailyData[$i - 1]['temperature'],
+                        "{$i}day_icon" => $dailyData[$i - 1]['icon']
+                    ]);
+                }
+            }
+        }
+
     }
 }

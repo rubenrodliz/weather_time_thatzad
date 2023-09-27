@@ -3,16 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Http\Controllers\GeoCodingController;
 use GuzzleHttp\Client;
 use DateTime;
 use DateTimeZone;
+use App\Models\ZipCode; // Asegúrate de importar el modelo correcto
 
 class HourlyWeatherController extends Controller
 {
-    public function getHourlyWeather(string $zipCode)
-    {
+    public function getHourlyWeather(string $zipCode): void{
         // Obtenemos las coordenadas del código postal
         $GeoCodingCoordinates = new GeoCodingController();
         $coordinates = $GeoCodingCoordinates->getCoordinates($zipCode);
@@ -25,7 +23,7 @@ class HourlyWeatherController extends Controller
         $data = json_decode($response->getBody(), true);
 
         // Obtener la hora actual en formato de hora
-        $hora_actual = date('H');
+        $hora_actual = now()->addHour()->addHour()->format('H');
 
         // Calcular las próximas 3 horas en formato de hora
         $horas_futuras = [];
@@ -71,7 +69,20 @@ class HourlyWeatherController extends Controller
             }
         }
 
-        // Devolvemos los datos en formato JSON
-        return $hourlyData;
+        // Almacenar los datos en la base de datos
+        $zipCodeModel = ZipCode::where('zip_code', $zipCode)->first();
+        if ($zipCodeModel) {
+            // Almacenar los datos en los campos correspondientes
+            $hourlyDataCount = count($hourlyData);
+            for ($i = 1; $i <= $hourlyDataCount; $i++) {
+                $zipCodeModel->update([
+                    "quantity_of_hours" => $hourlyDataCount,
+                    "{$i}h_time" => $hourlyData[$i - 1]['time'],
+                    "{$i}h_weather" => $hourlyData[$i - 1]['weather'],
+                    "{$i}h_temperature" => $hourlyData[$i - 1]['temperature'],
+                    "{$i}h_icon" => $hourlyData[$i - 1]['icon']
+                ]);
+            }
+        }
     }
 }

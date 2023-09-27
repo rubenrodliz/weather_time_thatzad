@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use DateTime;
 use DateTimeZone;
 use GuzzleHttp\Client;
+use App\Models\ZipCode; // Asegúrate de importar el modelo correcto
 
 class CurrentWeatherController extends Controller
 {
-    public function consultarAPI(string $zipCode): array
-    {
+    public function getCurrentWeather(string $zipCode): void {
         $API_KEY = '004e173adb28f870bede682220c84c74';
 
         // Realizamos la solicitud a la API
@@ -23,7 +23,7 @@ class CurrentWeatherController extends Controller
         $dt = new DateTime();
         $dt->setTimestamp($data->dt);
         $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
-        $formattedTime = $dt->format('H:i');
+        $formattedTime = $dt->format('H');
 
         // Traducimos el estado del tiempo
         $mainClimaTraducido = [
@@ -43,13 +43,15 @@ class CurrentWeatherController extends Controller
         $extractedData = [
             'zip_code' => $zipCode,
             'city' => $data->name,
-            'time' => $formattedTime,
-            'temperature' => round($data->main->temp),
-            'weather' => $weather,
-            'icon' => $data->weather[0]->icon
+            'lat' => $data->coord->lat,
+            'lon' => $data->coord->lon,
+            'current_time' => $formattedTime,
+            'current_weather' => $weather,
+            'current_temperature' => round($data->main->temp),
+            'current_icon' => $data->weather[0]->icon,
         ];
 
-        // Devolvemos los datos en formato JSON
-        return $extractedData;
+        // Guardar en la base de datos
+        ZipCode::updateOrCreate(['zip_code' => $zipCode], $extractedData);
     }
 }
