@@ -5,53 +5,60 @@ namespace App\Http\Controllers;
 use DateTime;
 use DateTimeZone;
 use GuzzleHttp\Client;
-use App\Models\ZipCode; // Asegúrate de importar el modelo correcto
+use App\Models\ZipCode;
+use Illuminate\Http\Client\RequestException;
 
 class CurrentWeatherController extends Controller
 {
-    public function getCurrentWeather(string $zipCode): void {
-        $API_KEY = '004e173adb28f870bede682220c84c74';
+    public function getCurrentWeather(string $zipCode) {
+        try {
 
-        // Realizamos la solicitud a la API
-        $client = new Client();
-        $response = $client->request('GET', "https://api.openweathermap.org/data/2.5/weather?lang=es&zip={$zipCode},ES&appid=004e173adb28f870bede682220c84c74&units=metric");
+            $API_KEY = '004e173adb28f870bede682220c84c74';
 
-        // Decodificamos la respuesta de la API
-        $data = json_decode($response->getBody());
+            // Realizamos la solicitud a la API
+            $client = new Client();
+            $response = $client->request('GET', "https://api.openweathermap.org/data/2.5/weather?lang=es&zip={$zipCode},ES&appid={$API_KEY}&units=metric");
 
-        // Formateamos la fecha y hora
-        $dt = new DateTime();
-        $dt->setTimestamp($data->dt);
-        $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
-        $formattedTime = $dt->format('H');
+            // Decodificamos la respuesta de la API
+            $data = json_decode($response->getBody());
 
-        // Traducimos el estado del tiempo
-        $mainClimaTraducido = [
-            'Clear' => 'Despejado',
-            'Clouds' => 'Nublado',
-            'Rain' => 'Lluvia',
-            'Drizzle' => 'Llovizna',
-            'Thunderstorm' => 'Tormenta',
-            'Snow' => 'Nieve',
-        ];
+            // Formateamos la fecha y hora
+            $dt = new DateTime();
+            $dt->setTimestamp($data->dt);
+            $dt->setTimezone(new DateTimeZone('Europe/Madrid'));
+            $formattedTime = $dt->format('H');
 
-        $weather = isset($mainClimaTraducido[$data->weather[0]->main])
-            ? $mainClimaTraducido[$data->weather[0]->main]
-            : $data->weather[0]->main;
+            // Traducimos el estado del tiempo
+            $mainClimaTraducido = [
+                'Clear' => 'Despejado',
+                'Clouds' => 'Nublado',
+                'Rain' => 'Lluvia',
+                'Drizzle' => 'Llovizna',
+                'Thunderstorm' => 'Tormenta',
+                'Snow' => 'Nieve',
+            ];
 
-        // Extremos los datos que nos interesan
-        $extractedData = [
-            'zip_code' => $zipCode,
-            'city' => $data->name,
-            'lat' => $data->coord->lat,
-            'lon' => $data->coord->lon,
-            'current_time' => $formattedTime,
-            'current_weather' => $weather,
-            'current_temperature' => round($data->main->temp),
-            'current_icon' => $data->weather[0]->icon,
-        ];
+            $weather = isset($mainClimaTraducido[$data->weather[0]->main])
+                ? $mainClimaTraducido[$data->weather[0]->main]
+                : $data->weather[0]->main;
 
-        // Guardar en la base de datos
-        ZipCode::updateOrCreate(['zip_code' => $zipCode], $extractedData);
+            // Extremos los datos que nos interesan
+            $extractedData = [
+                'zip_code' => $zipCode,
+                'city' => $data->name,
+                'lat' => $data->coord->lat,
+                'lon' => $data->coord->lon,
+                'current_time' => $formattedTime,
+                'current_weather' => $weather,
+                'current_temperature' => round($data->main->temp),
+                'current_icon' => $data->weather[0]->icon,
+            ];
+
+            // Guardar en la base de datos
+            ZipCode::updateOrCreate(['zip_code' => $zipCode], $extractedData);
+        } catch (RequestException $e) {
+            // Si hay un error, redirigimos a la página de error
+            return redirect()->route('error')->with('error', 'Ha ocurrido un error al consultar la API');
+        }
     }
 }

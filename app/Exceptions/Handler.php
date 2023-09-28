@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Client\RequestException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,5 +28,14 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof RequestException) {
+            return redirect()->route('error')->with('error', 'Ha ocurrido un error al consultar la API');
+        }
+
+        return parent::render($request, $exception);
     }
 }

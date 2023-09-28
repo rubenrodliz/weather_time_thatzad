@@ -12,3 +12,6 @@ Route::post('/consultar-api', [ZipCodeController::class, 'store'])->name('zipcod
 
 // Ruta para mostrar el resultado
 Route::get('/mostrar-resultado/{zipCode}', [ZipCodeController::class, 'show'])->name('zipcode.show');
+
+// Ruta para mostrar posibles errores
+Route::get('/error', [ErrorController::class, 'index'])->name('error');

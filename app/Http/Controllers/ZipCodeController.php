@@ -62,6 +62,7 @@ class ZipCodeController extends Controller
             // Obtenemos el top 5 de códigos postales más fríos
             $Top5ColdestCitiesController = new Top5ColdestCitiesController();
             $top5ColdestZipCodes = $Top5ColdestCitiesController->getTop5ColdestZipCodes();
+
             return view('resultado', compact('existingRecord', 'top5ColdestZipCodes'));
         } 
 
