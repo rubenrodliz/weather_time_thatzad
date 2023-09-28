@@ -23,7 +23,7 @@
 
     <div class="container-fluid">
         <div class="logo-container text-center py-5">
-            <img src="{{ asset('img/logo-resultado.svg') }}" alt="" class="img-fluid">
+            <img src="{{ asset('img/logo-resultado.svg') }}" alt="Logo de Thatz Weather" class="img-fluid">
         </div>
         <div class="results-table d-flex justify-content-center flex-column flex-lg-row text-white mx-2">
             <div class="city-data d-flex flex-column justify-content-center flex-grow-1 p-3 mx-2 shadow">
