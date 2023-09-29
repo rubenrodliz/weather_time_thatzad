@@ -44,7 +44,7 @@ class DailyWeatherController extends Controller
             ];
 
             // Obtener la fecha actual en formato de día
-            $fecha_actual = date('d');
+            $fecha_actual = date('Y-m-d');
 
             // Inicializar arrays para cada día
             $dailyData = [];
@@ -54,7 +54,7 @@ class DailyWeatherController extends Controller
                 if (count($dailyData) === 5) {
                     break;
                 }
-                $dia_dt = date('d', $daily['dt']);
+                $dia_dt = date('Y-m-d', $daily['dt']);
 
                 // Verificar si la fecha es mayor o igual a la fecha actual
                 if ($dia_dt >= $fecha_actual) {

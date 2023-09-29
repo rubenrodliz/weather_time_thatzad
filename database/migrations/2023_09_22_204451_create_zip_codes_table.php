@@ -50,6 +50,10 @@ return new class extends Migration
             $table->string('4day_weather')->nullable();
             $table->string('4day_temperature')->nullable();
             $table->string('4day_icon')->nullable();
+            $table->string('5day_time')->nullable();
+            $table->string('5day_weather')->nullable();
+            $table->string('5day_temperature')->nullable();
+            $table->string('5day_icon')->nullable();
             $table->timestamps();
         });
     }
