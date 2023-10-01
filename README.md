@@ -14,7 +14,7 @@ Thatz Weather es un proyecto que permite consultar el clima de cualquier ciudad 
 ## Uso de la aplicación
 
 Para utilizar la aplicación es necesario tener instalado MySQL, en mi caso, he trabajado con XAMPP. Una vez instalado, es necesario crear una base de datos llamada `thatz_weather` y, posteriormente, realizar un `php artisan migrate` para aplicar las migraciones de la base de datos. <br>
-Seguidamente, ejecutar `php artisan serve` para levantar el servidor de Laravel. Y, ejecutar `npm run dev` para compilar SAP CSS y JS. <br>
+Seguidamente, ejecutar `php artisan serve` para levantar el servidor de Laravel. Y, ejecutar `npm run dev` para compilar SASS, CSS, JS, etc. <br>
 Por último, acceder a la ruta `http://localhost:8000/` para acceder a la aplicación.
 
 ### Distribución de la aplicación
